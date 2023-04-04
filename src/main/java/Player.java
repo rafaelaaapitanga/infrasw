@@ -69,6 +69,7 @@ public class Player {
         runner = new SwingWorker() {
             @Override
             public Object doInBackground() throws Exception {
+                isPlaying = true;
                 // Setando as informações na tela
                 window.setPlayingSongInfo(msc_atual.getTitle(), msc_atual.getAlbum(), msc_atual.getArtist());
 
@@ -85,22 +86,24 @@ public class Player {
                 }
 
                 // Reproduzindo a música enquanto o botão de play/pause estiver ativado
-                while (press_playpause) {
-                    try {
-                        window.setTime((int) (currentFrame * (int) msc_atual.getMsPerFrame()), (int) msc_atual.getMsLength());
-                        window.setPlayPauseButtonIcon(1);
-                        window.setEnabledPlayPauseButton(true);
-                        window.setEnabledStopButton(true);
-                        ativ_playpause = true;
-                        ativ_parar = true;
+                while (true) {
+                    if (press_playpause) {
+                        try {
+                            window.setTime((currentFrame * (int) msc_atual.getMsPerFrame()), (int) msc_atual.getMsLength());
+                            window.setPlayPauseButtonIcon(1);
+                            window.setEnabledPlayPauseButton(true);
+                            window.setEnabledStopButton(true);
+                            ativ_playpause = true;
+                            ativ_parar = true;
 
-                        playNextFrame();
+                            playNextFrame();
 
-                    } catch (JavaLayerException ex) {
-                        throw new RuntimeException(ex);
+                        } catch (JavaLayerException ex) {
+                            throw new RuntimeException(ex);
+                        }
                     }
                 }
-                return null;
+
             }
         };
 
@@ -118,6 +121,7 @@ public class Player {
         // musica reproduzida é comparada com a removida
         if (msc_atual.equals(msc_removida)) {
             stopPlaying(); // se elas forem iguais, a reprodução é interrompida
+
         }
 
     };
@@ -138,7 +142,7 @@ public class Player {
         if (isPlaying) {
             // se a música estiver tocando, pausa a reprodução
             press_playpause = false;
-            ativ_playpause = false;
+            ativ_playpause = false; // variavel não sendo utilizada?
             isPlaying = false; // atualiza o estado de reprodução da música
             window.setPlayPauseButtonIcon(0);
         } else {
@@ -207,6 +211,7 @@ public class Player {
             SampleBuffer output = (SampleBuffer) decoder.decodeFrame(h, bitstream);
             device.write(output.getBuffer(), 0, output.getBufferLength());
             bitstream.closeFrame();
+            currentFrame++;
         }
         return true;
     }
@@ -252,8 +257,8 @@ public class Player {
         stopRequested = true;
 
         // Deixa o botão com ícone de play
-        window.setEnabledPlayPauseButton(false);
         window.setPlayPauseButtonIcon(0);
+        window.setEnabledPlayPauseButton(false);
 
         // Desabilita o stop
         window.setEnabledStopButton(false);
